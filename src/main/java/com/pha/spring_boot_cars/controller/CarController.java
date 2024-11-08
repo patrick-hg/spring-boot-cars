@@ -69,12 +69,12 @@ public class CarController {
                 .build();
     }
 
-    @RequestMapping(method = RequestMethod.OPTIONS)
-    public ResponseEntity<String> optionsForSpecificCar() {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .allow(HttpMethod.HEAD, HttpMethod.GET, HttpMethod.PUT, HttpMethod.DELETE)
-                .build();
-    }
+//    @RequestMapping(method = RequestMethod.OPTIONS)
+//    public ResponseEntity<String> optionsForSpecificCar() {
+//        return ResponseEntity
+//                .status(HttpStatus.OK)
+//                .allow(HttpMethod.HEAD, HttpMethod.GET, HttpMethod.PUT, HttpMethod.DELETE)
+//                .build();
+//    }
 
 }
