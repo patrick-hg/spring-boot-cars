@@ -1,4 +1,4 @@
-package com.pha.spring_boot_cars.repository;
+package com.pha.spring_boot_cars.book;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
