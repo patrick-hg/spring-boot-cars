@@ -7,18 +7,26 @@ import com.pha.spring_boot_cars.book.exception.BookIllegalUpdateException;
 import com.pha.spring_boot_cars.book.exception.BookNotExistException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@ExtendWith(MockitoExtension.class)
 public class BooksIntegrationTests {
 
     @Autowired
@@ -27,10 +35,17 @@ public class BooksIntegrationTests {
     @Autowired
     private BookController bookController;
 
+    @Autowired
+    private TestRestTemplate testRestTemplate;  // the alternative is SpringBoot's MockMVC
+
     @Test
     void should_run_assignement_scenario() {
         // empty database
-        assertTrue(bookController.getAllBooks().getBody().isEmpty());
+//        assertTrue(bookController.getAllBooks().getBody().isEmpty());
+        ResponseEntity<List> booksResponse = this.testRestTemplate.getForEntity("/books", List.class);
+        assertEquals(HttpStatus.OK, booksResponse.getStatusCode());
+        assertTrue(booksResponse.getBody().isEmpty());
+
 
         // a. add a book
         BookDto theLostGardens = bookTheLostGardens();
@@ -48,8 +63,8 @@ public class BooksIntegrationTests {
         assertEquals(2, allBooks.size());
 
         // e. retrieve one book by ISBN
-        assertEquals(theLostGardens, bookController.getBook(theLostGardens.getIsbn()));
-        assertEquals(stPancrasStation, bookController.getBook(stPancrasStation.getIsbn()));
+        assertEquals(theLostGardens, bookController.getBook(theLostGardens.getIsbn()).getBody());
+        assertEquals(stPancrasStation, bookController.getBook(stPancrasStation.getIsbn()).getBody());
 
         // f. retrieve a book using an invalid ISBN - an exception
         assertThrows(BookNotExistException.class, () -> bookService.findByIsbn("000-0-0000-00"));
