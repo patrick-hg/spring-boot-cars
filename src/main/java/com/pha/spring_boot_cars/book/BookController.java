@@ -3,6 +3,8 @@ package com.pha.spring_boot_cars.book;
 import com.pha.spring_boot_cars.book.dto.BookDto;
 import com.pha.spring_boot_cars.book.dto.BookUpdateRequestDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,6 +54,25 @@ public class BookController {
     public ResponseEntity deleteBook(String isbn) {
         bookService.deleteBook(isbn);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(path = "/{isbn}")
+    public ResponseEntity<String> addBookProhibited(String isbn) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED.value()).build();
+    }
+
+    @RequestMapping
+    public ResponseEntity<String> supportedForBooks() {
+        return ResponseEntity.ok()
+                .allow(HttpMethod.GET, HttpMethod.POST)
+                .build();
+    }
+
+    @RequestMapping(path = "/{isbn}")
+    public ResponseEntity<String> supportedForBooksIsbn() {
+        return ResponseEntity.ok()
+                .allow(HttpMethod.GET, HttpMethod.PUT, HttpMethod.DELETE)
+                .build();
     }
 
 }

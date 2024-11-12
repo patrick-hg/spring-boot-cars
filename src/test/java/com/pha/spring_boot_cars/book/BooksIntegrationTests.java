@@ -14,6 +14,7 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -83,7 +84,8 @@ public class BooksIntegrationTests {
         // re-create the books
         bookController.createBook(theLostGardens);
         bookController.createBook(stPancrasStation);
-        bookController.createBook(bookTheBlueRose());
+        BookDto theBlueRose = bookTheBlueRose();
+        bookController.createBook(theBlueRose);
 
         // j. change book title
         bookController.updateBook(
@@ -102,7 +104,20 @@ public class BooksIntegrationTests {
         Assertions.assertEquals(2, booksFromAnthonyEglin.size());
 
         // m. try to add a book using the URI /books/{isbn} - HTTP method not allowed
-//        assertThrows(HttpClientErrorException.MethodNotAllowed.class, bookController.)
+        ResponseEntity responseNotAllowedCreate = testRestTemplate.postForEntity("/books/" + theBlueRose.getIsbn(), theBlueRose, ResponseEntity.class);
+        assertEquals(HttpStatus.METHOD_NOT_ALLOWED, responseNotAllowedCreate.getStatusCode());
+
+        // o. send a request to the collection URI to find out what verbs are supported
+        List<HttpMethod> supportedMethods = List.of(HttpMethod.GET, HttpMethod.POST);
+        assertTrue(
+                testRestTemplate.optionsForAllow("/books")
+                        .containsAll(supportedMethods));
+
+        // p. do the same for an individual ressource
+        List<HttpMethod> supportedMethodsForIndividual = List.of(HttpMethod.GET, HttpMethod.PUT, HttpMethod.DELETE);
+        assertTrue(
+                testRestTemplate.optionsForAllow("/books/" + theBlueRose.getIsbn())
+                        .containsAll(supportedMethodsForIndividual));
     }
 
     private BookDto bookTheLostGardens () {
